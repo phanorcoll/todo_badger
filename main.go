@@ -7,12 +7,28 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/phanorcoll/todo_badger/api/handlers"
 	"github.com/phanorcoll/todo_badger/config"
+	"github.com/swaggo/echo-swagger"
+	_ "github.com/phanorcoll/todo_badger/docs"
 )
 
+// @title Todo Badger (Name will Change)
+// @version 1.0
+// @description Todo application implementing CharmKV(Badger) as database
+
+// @contact.name Phanor Coll
+// @contact.url https://www.phanorcoll.com
+// @contact.email phanorcoll@gmail.com
+
+// @host localhost:8000
+// @BasePath /api/v1
 func main() {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
+
+  //TODO: 
+  //remove this endpoint
 	e.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, "home endpoint")
 	})

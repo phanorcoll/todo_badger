@@ -21,3 +21,9 @@ air
 ```
 More info at
 [Air Documentation](https://github.com/cosmtrek/air)
+
+## Documentation
+Added Swagger to document the API
+
+- [Echo Swagger repo](https://github.com/swaggo/echo-swagger)
+- [Declarative Comments format](https://github.com/swaggo/swag#declarative-comments-format)

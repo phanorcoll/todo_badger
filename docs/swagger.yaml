@@ -1,0 +1,12 @@
+basePath: /api/v1
+host: localhost:8000
+info:
+  contact:
+    email: phanorcoll@gmail.com
+    name: Phanor Coll
+    url: https://www.phanorcoll.com
+  description: Todo application implementing CharmKV(Badger) as database
+  title: Todo Badger (Name will Change)
+  version: "1.0"
+paths: {}
+swagger: "2.0"

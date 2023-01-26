@@ -1,0 +1,16 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Todo application implementing CharmKV(Badger) as database",
+        "title": "Todo Badger (Name will Change)",
+        "contact": {
+            "name": "Phanor Coll",
+            "url": "https://www.phanorcoll.com",
+            "email": "phanorcoll@gmail.com"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8000",
+    "basePath": "/api/v1",
+    "paths": {}
+}
