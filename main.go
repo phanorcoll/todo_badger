@@ -17,8 +17,10 @@ func main() {
     return c.JSON(http.StatusOK,"home endpoint")
 	})
 
+  v1:=e.Group("/api/v1")
+
 	//User related routes
-	gUser := e.Group("/users")
+	gUser := v1.Group("/users")
 	gUser.GET("", handlers.ListUsers)
 	gUser.POST("", handlers.CreateUser)
 	gUser.GET("/:userId", handlers.GetUser)
@@ -26,7 +28,7 @@ func main() {
 	gUser.DELETE("/:userId", handlers.DeleteUser)
 
 	//Tasks related routes
-	gTask := e.Group("/tasks")
+	gTask := v1.Group("/tasks")
 	gTask.GET("", handlers.ListTasks)
   gTask.POST("", handlers.CreateTask)
 	gTask.GET("/:taskId", handlers.GetTask)
