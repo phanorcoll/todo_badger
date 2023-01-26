@@ -5,12 +5,12 @@
 cp .env.sample .env
 ```
 
-#### 🏃 Run Locally
+#### 🏃 Run Locally without "Hot Reloading"
 ```bash
 go run main.go
 ```
 
-### ♻️  Hot Reloading
+#### ♻️  Enable Hot Reloading
 Install Air
 ```bash
 go install github.com/cosmtrek/air@latest
