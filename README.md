@@ -10,8 +10,7 @@ cp .env.sample .env
 go run main.go
 ```
 
-
-###♻️ Hot Reloading
+### ♻️  Hot Reloading
 Install Air
 ```bash
 go install github.com/cosmtrek/air@latest
