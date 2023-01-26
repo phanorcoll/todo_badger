@@ -14,10 +14,10 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.GET("/", func(c echo.Context) error {
-    return c.JSON(http.StatusOK,"home endpoint")
+		return c.JSON(http.StatusOK, "home endpoint")
 	})
 
-  v1:=e.Group("/api/v1")
+	v1 := e.Group("/api/v1")
 
 	//User related routes
 	gUser := v1.Group("/users")
@@ -30,7 +30,7 @@ func main() {
 	//Tasks related routes
 	gTask := v1.Group("/tasks")
 	gTask.GET("", handlers.ListTasks)
-  gTask.POST("", handlers.CreateTask)
+	gTask.POST("", handlers.CreateTask)
 	gTask.GET("/:taskId", handlers.GetTask)
 	gTask.PUT("/:taskId", handlers.UpdateTask)
 	gTask.DELETE("/:taskId", handlers.DeleteTask)
