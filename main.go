@@ -7,8 +7,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/phanorcoll/todo_badger/api/handlers"
 	"github.com/phanorcoll/todo_badger/config"
-	"github.com/swaggo/echo-swagger"
 	_ "github.com/phanorcoll/todo_badger/docs"
+	"github.com/swaggo/echo-swagger"
 )
 
 // @title Todo Badger (Name will Change)
@@ -27,8 +27,8 @@ func main() {
 	e.Use(middleware.Recover())
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
-  //TODO: 
-  //remove this endpoint
+	//TODO:
+	//remove this endpoint
 	e.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, "home endpoint")
 	})
