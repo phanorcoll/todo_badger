@@ -87,21 +87,36 @@ func GetTask(c echo.Context) error {
 	return c.JSON(http.StatusOK, tTask)
 }
 
-//TODO:
-//Add functionality, update existing task
 //UpdateTask updates user data base on body sent
 func UpdateTask(c echo.Context) error {
+	//search for task
 	taskID := c.Param("taskId")
+	v, err := DB.Get([]byte(taskID))
+	if err != nil {
+		return c.JSON(http.StatusNotFound, "task not found")
+	}
 	task := Task{}
+	err = json.Unmarshal(v, &task)
+	if err != nil {
+
+	}
 	defer c.Request().Body.Close()
-	err := json.NewDecoder(c.Request().Body).Decode(&task)
+	//Get the body fro the request and replace the content of task
+	err = json.NewDecoder(c.Request().Body).Decode(&task)
 	if err != nil {
 		log.Fatalf("Failed reading the request body %s\n", err)
 		return c.JSON(http.StatusInternalServerError, err.Error)
 	}
 
-	log.Println(task)
-	return c.JSON(http.StatusOK, "updating task "+taskID)
+	mTask, err := json.Marshal(task)
+	if err != nil {
+		log.Fatalf("Cannot Marshal Task %s\n", err)
+	}
+
+	if err := DB.Set([]byte(task.Id), []byte(mTask)); err != nil {
+		log.Fatal(err)
+	}
+	return c.JSON(http.StatusOK, task)
 }
 
 //DeleteTask deletes a particular user for the DB
