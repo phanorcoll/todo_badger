@@ -129,7 +129,7 @@ func UpdateUser(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusNotFound, "user not found")
 	}
-	currentUser := UserPublic{}
+	currentUser := User{}
 	err = json.Unmarshal(v, &currentUser)
 	if err != nil {
 		log.Fatalf("Cannot Marshal currentUser %s\n", err)
