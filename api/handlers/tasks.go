@@ -18,7 +18,10 @@ type Task struct {
 	Completed   bool   `json:"completed,omitempty"`
 	Priority    string `json:"priority,omitempty"`
 	UserID      string `json:"userId,omitempty"`
+	Type        string `json:"type"`
 }
+
+var TypeTask = "TASK"
 
 //ListTasks returns the list of tasks
 func ListTasks(c echo.Context) error {
@@ -33,7 +36,9 @@ func ListTasks(c echo.Context) error {
 			err := item.Value(func(val []byte) error {
 				tTask := Task{}
 				_ = json.Unmarshal(val, &tTask)
-				listTasks = append(listTasks, tTask)
+				if tTask.Type == TypeTask {
+					listTasks = append(listTasks, tTask)
+				}
 				return nil
 			})
 			if err != nil {
@@ -48,6 +53,7 @@ func ListTasks(c echo.Context) error {
 //CreateTask creates a new task
 func CreateTask(c echo.Context) error {
 	task := Task{}
+	task.Type = TypeTask
 	task.Id = uuid.New().String()[:8]
 	defer c.Request().Body.Close()
 	err := json.NewDecoder(c.Request().Body).Decode(&task)

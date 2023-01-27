@@ -20,6 +20,7 @@ type User struct {
 	Email    string `json:"email,omitempty"`
 	Username string `json:"username,omitempty"`
 	Password string `json:"password"`
+	Type     string `json:"type,omitempty"`
 }
 
 type UserPublic struct {
@@ -27,9 +28,12 @@ type UserPublic struct {
 	Name     string `json:"name,omitempty"`
 	Email    string `json:"email,omitempty"`
 	Username string `json:"username,omitempty"`
+	Type     string `json:"type,omitempty"`
 }
 
 var DB *kv.KV = database.CreateClient()
+
+var TypeUser = "USER"
 
 // ListUsers returns the list of users
 // ListUsers godoc
@@ -54,8 +58,10 @@ func ListUsers(c echo.Context) error {
 			err := item.Value(func(v []byte) error {
 				tuser := UserPublic{}
 				_ = json.Unmarshal(v, &tuser)
+				if tuser.Type == TypeUser {
+					listUsers = append(listUsers, tuser)
+				}
 				// fmt.Printf("%s - %s\n", k, v)
-				listUsers = append(listUsers, tuser)
 				return nil
 			})
 			if err != nil {
@@ -80,6 +86,7 @@ func ListUsers(c echo.Context) error {
 //	@Router			/users [post]
 func CreateUser(c echo.Context) error {
 	user := User{}
+	user.Type = TypeUser
 	user.Id = uuid.New().String()[:8]
 	defer c.Request().Body.Close()
 	err := json.NewDecoder(c.Request().Body).Decode(&user)
