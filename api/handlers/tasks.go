@@ -5,25 +5,50 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/dgraph-io/badger/v3"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
 //Task holds the properties for task instances
 type Task struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Completed   bool   `json:"completed"`
-	Priority    string `json:"priority"`
+	Id          string `json:"id,omitempty"`
+	Title       string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
+	Completed   bool   `json:"completed,omitempty"`
+	Priority    string `json:"priority,omitempty"`
+	UserID      string `json:"userId,omitempty"`
 }
 
 //ListTasks returns the list of tasks
 func ListTasks(c echo.Context) error {
-	return c.JSON(http.StatusOK, "list of task per user")
+	listTasks := []Task{}
+	DB.View(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		opts.PrefetchSize = 10
+		it := txn.NewIterator(opts)
+		defer it.Close()
+		for it.Rewind(); it.Valid(); it.Next() {
+			item := it.Item()
+			err := item.Value(func(val []byte) error {
+				tTask := Task{}
+				_ = json.Unmarshal(val, &tTask)
+				listTasks = append(listTasks, tTask)
+				return nil
+			})
+			if err != nil {
+				panic(err)
+			}
+		}
+		return nil
+	})
+	return c.JSON(http.StatusOK, listTasks)
 }
 
 //CreateTask creates a new task
 func CreateTask(c echo.Context) error {
 	task := Task{}
+	task.Id = uuid.New().String()[:8]
 	defer c.Request().Body.Close()
 	err := json.NewDecoder(c.Request().Body).Decode(&task)
 	if err != nil {
@@ -31,16 +56,33 @@ func CreateTask(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error)
 	}
 
-	log.Println(task)
-	return c.JSON(http.StatusOK, "task created")
+	t, err := json.Marshal(task)
+	if err != nil {
+		log.Fatalf("Cannot Marshal Task %s\n", err)
+	}
+
+	if err := DB.Set([]byte(task.Id), []byte(t)); err != nil {
+		log.Fatal(err)
+	}
+
+	return c.JSON(http.StatusOK, task)
 }
 
 //GetTask returns data from a particular user
 func GetTask(c echo.Context) error {
 	taskID := c.Param("taskId")
-	return c.JSON(http.StatusOK, "getting task "+taskID)
+	v, err := DB.Get([]byte(taskID))
+	if err != nil {
+		return c.JSON(http.StatusNotFound, "Task not found")
+	}
+
+	tTask := Task{}
+	_ = json.Unmarshal(v, &tTask)
+	return c.JSON(http.StatusOK, tTask)
 }
 
+//TODO:
+//Add functionality, update existing task
 //UpdateTask updates user data base on body sent
 func UpdateTask(c echo.Context) error {
 	taskID := c.Param("taskId")
@@ -59,5 +101,8 @@ func UpdateTask(c echo.Context) error {
 //DeleteTask deletes a particular user for the DB
 func DeleteTask(c echo.Context) error {
 	taskID := c.Param("taskId")
-	return c.JSON(http.StatusOK, "Deleting task "+taskID)
+	if err := DB.Delete([]byte(taskID)); err != nil {
+		return c.JSON(http.StatusBadRequest, err)
+	}
+	return c.JSON(http.StatusOK, "task deleted")
 }
