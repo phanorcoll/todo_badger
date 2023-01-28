@@ -1,33 +1,45 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
-  "github.com/phanorcoll/todo_badger/config"
+	"github.com/phanorcoll/todo_badger/config"
 )
 
 type jwtCustomClaims struct {
 	Name  string `json:"name"`
-	Admin bool   `json:"admin"`
+	Email string `json:"email"`
 	jwt.RegisteredClaims
 }
 
 func Login(c echo.Context) error {
-	username := c.FormValue("username")
+	email := c.FormValue("email")
 	password := c.FormValue("password")
 
-	//Throws unauthorized error
-	if username != "jon" || password != "snow" {
+	//search to see if the email exists
+	v, err := DB.Get([]byte(email))
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, echo.Map{
+      "msg": "email not found",
+    })
+	}
+
+	tuser := User{}
+	_ = json.Unmarshal(v, &tuser)
+
+	//verify the password is the same
+	if password != tuser.Password {
 		return echo.ErrUnauthorized
 	}
 
 	//set custom claims
 	claims := &jwtCustomClaims{
-		"John Snow",
-		true,
+		tuser.Name,
+		tuser.Email,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 72)),
 		},
@@ -36,7 +48,7 @@ func Login(c echo.Context) error {
 	//Create token with claims
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	//Generate ecndoded token and send it as response
+	//Generate encoded token and send it as response
 	t, err := token.SignedString([]byte(config.EnvVariables.SECRET_KEY))
 	if err != nil {
 		return err
