@@ -37,7 +37,6 @@ var TypeUser = "USER"
 
 var validate = validator.New()
 
-
 // ListUsers returns the list of users
 // ListUsers godoc
 //
@@ -94,16 +93,24 @@ func CreateUser(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error)
 	}
-  //validate requird fields are present in user
+	//validate requird fields are present in user
 	if err := validate.Struct(user); err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	//verify if the email is already present in the DB
+  //if it exists, returns msg
+	_, err = DB.Get([]byte(user.Email))
+	if err == nil {
+		return c.JSON(http.StatusFound, echo.Map{
+			"msg": "Email already exists",
+		})
 	}
 
 	u, err := json.Marshal(user)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
-	if err := DB.Set([]byte(user.Id), []byte(u)); err != nil {
+	if err := DB.Set([]byte(user.Email), []byte(u)); err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
 
