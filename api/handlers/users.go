@@ -54,14 +54,12 @@ func ListUsers(c echo.Context) error {
 		defer it.Close() //nolint:errcheck
 		for it.Rewind(); it.Valid(); it.Next() {
 			item := it.Item()
-			// k := item.Key()
 			err := item.Value(func(v []byte) error {
 				tuser := UserPublic{}
 				_ = json.Unmarshal(v, &tuser)
 				if tuser.Type == TypeUser {
 					listUsers = append(listUsers, tuser)
 				}
-				// fmt.Printf("%s - %s\n", k, v)
 				return nil
 			})
 			if err != nil {
