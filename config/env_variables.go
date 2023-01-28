@@ -10,7 +10,9 @@ import (
 //to be used across the app
 type envVars struct {
 	//The port number for the http server
-	PORT string `mapstructure:"SERVER_PORT"`
+	PORT   string `mapstructure:"SERVER_PORT"`
+  //The secret key for JWT
+	SECRET_KEY string `mapstructure:"SECRET_KEY"`
 }
 
 var (

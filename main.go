@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/phanorcoll/todo_badger/api/handlers"
@@ -35,8 +36,12 @@ func main() {
 		return c.JSON(http.StatusOK, "home endpoint")
 	})
 
-	v1 := e.Group("/api/v1")
+	e.POST("/login", handlers.Login)
 
+	v1 := e.Group("/api/v1")
+	v1.Use(echojwt.WithConfig(echojwt.Config{
+		SigningKey: []byte(config.EnvVariables.SECRET_KEY),
+	}))
 	//User related routes
 	gUser := v1.Group("/users")
 	gUser.GET("", handlers.ListUsers)
