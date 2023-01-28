@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
+	"github.com/phanorcoll/todo_badger/api/helper"
 	"github.com/phanorcoll/todo_badger/config"
 )
 
@@ -24,15 +25,16 @@ func Login(c echo.Context) error {
 	v, err := DB.Get([]byte(email))
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, echo.Map{
-      "msg": "email not found",
-    })
+			"msg": "email not found",
+		})
 	}
 
 	tuser := User{}
 	_ = json.Unmarshal(v, &tuser)
 
 	//verify the password is the same
-	if password != tuser.Password {
+	check := helper.VerifyPassword(tuser.Password, password)
+	if check != true {
 		return echo.ErrUnauthorized
 	}
 

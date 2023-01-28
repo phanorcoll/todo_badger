@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/phanorcoll/todo_badger/api/database"
+	"github.com/phanorcoll/todo_badger/api/helper"
 )
 
 //User holds the properties for user instances
@@ -98,7 +99,7 @@ func CreateUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 	//verify if the email is already present in the DB
-  //if it exists, returns msg
+	//if it exists, returns msg
 	_, err = DB.Get([]byte(user.Email))
 	if err == nil {
 		return c.JSON(http.StatusFound, echo.Map{
@@ -106,6 +107,8 @@ func CreateUser(c echo.Context) error {
 		})
 	}
 
+  //creates a hash from the password
+	user.Password = helper.HashPassword(user.Password)
 	u, err := json.Marshal(user)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
