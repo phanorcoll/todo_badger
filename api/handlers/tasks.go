@@ -13,11 +13,11 @@ import (
 //Task holds the properties for task instances
 type Task struct {
 	Id          string `json:"id,omitempty"`
-	Title       string `json:"title,omitempty"`
-	Description string `json:"description,omitempty"`
-	Completed   bool   `json:"completed,omitempty"`
-	Priority    string `json:"priority,omitempty"`
-	UserID      string `json:"userId,omitempty"`
+  Title       string `json:"title,omitempty" validate:"required"`
+	Description string `json:"description,omitempty" validate:"required"`
+	Completed   bool   `json:"completed,omitempty" validate:"required"`
+	Priority    string `json:"priority,omitempty" validate:"required"`
+	UserID      string `json:"userId,omitempty" validate:"required"`
 	Type        string `json:"type"`
 }
 
@@ -59,6 +59,10 @@ func CreateTask(c echo.Context) error {
 	err := json.NewDecoder(c.Request().Body).Decode(&task)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error)
+	}
+  //validate requird fields are present in task
+	if err := validate.Struct(task); err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	t, err := json.Marshal(task)
@@ -104,6 +108,10 @@ func UpdateTask(c echo.Context) error {
 	err = json.NewDecoder(c.Request().Body).Decode(&task)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error)
+	}
+  //validate requird fields are present in task
+	if err := validate.Struct(task); err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	mTask, err := json.Marshal(task)

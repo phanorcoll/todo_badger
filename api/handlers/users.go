@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/charm/kv"
 	"github.com/dgraph-io/badger/v3"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/phanorcoll/todo_badger/api/database"
@@ -14,13 +15,14 @@ import (
 //User holds the properties for user instances
 type User struct {
 	Id       string `json:"id"`
-	Name     string `json:"name,omitempty"`
-	Email    string `json:"email,omitempty"`
-	Username string `json:"username,omitempty"`
-	Password string `json:"password"`
+	Name     string `json:"name,omitempty" validate:"required"`
+	Email    string `json:"email,omitempty" validate:"required"`
+	Username string `json:"username,omitempty" validate:"required"`
+	Password string `json:"password" validate:"required"`
 	Type     string `json:"type,omitempty"`
 }
 
+//UserPublic hold the properties publicly available
 type UserPublic struct {
 	Id       string `json:"id,omitempty"`
 	Name     string `json:"name,omitempty"`
@@ -32,6 +34,9 @@ type UserPublic struct {
 var DB *kv.KV = database.CreateClient()
 
 var TypeUser = "USER"
+
+var validate = validator.New()
+
 
 // ListUsers returns the list of users
 // ListUsers godoc
@@ -88,6 +93,10 @@ func CreateUser(c echo.Context) error {
 	err := json.NewDecoder(c.Request().Body).Decode(&user)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error)
+	}
+  //validate requird fields are present in user
+	if err := validate.Struct(user); err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	u, err := json.Marshal(user)
