@@ -8,7 +8,7 @@ import (
 
 //CreateClient returns instance of the DB
 func CreateClient() *kv.KV {
-	db, err := kv.OpenWithDefaults("test_db")
+	db, err := kv.OpenWithDefaults("todo_badger")
 	if err != nil {
 		log.Fatalf("Error with DB %s \n", err)
 	}
