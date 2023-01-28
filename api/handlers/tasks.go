@@ -42,7 +42,7 @@ func ListTasks(c echo.Context) error {
 				return nil
 			})
 			if err != nil {
-				panic(err)
+				return c.JSON(http.StatusBadRequest, err)
 			}
 		}
 		return nil
@@ -58,17 +58,16 @@ func CreateTask(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := json.NewDecoder(c.Request().Body).Decode(&task)
 	if err != nil {
-		log.Fatalf("Failed reading the request body %s\n", err)
 		return c.JSON(http.StatusInternalServerError, err.Error)
 	}
 
 	t, err := json.Marshal(task)
 	if err != nil {
-		log.Fatalf("Cannot Marshal Task %s\n", err)
+		return c.JSON(http.StatusBadRequest, err)
 	}
 
 	if err := DB.Set([]byte(task.Id), []byte(t)); err != nil {
-		log.Fatal(err)
+		return c.JSON(http.StatusInternalServerError, err)
 	}
 
 	return c.JSON(http.StatusOK, task)
@@ -98,19 +97,18 @@ func UpdateTask(c echo.Context) error {
 	task := Task{}
 	err = json.Unmarshal(v, &task)
 	if err != nil {
-
+		return c.JSON(http.StatusInternalServerError, err)
 	}
 	defer c.Request().Body.Close()
 	//Get the body fro the request and replace the content of task
 	err = json.NewDecoder(c.Request().Body).Decode(&task)
 	if err != nil {
-		log.Fatalf("Failed reading the request body %s\n", err)
 		return c.JSON(http.StatusInternalServerError, err.Error)
 	}
 
 	mTask, err := json.Marshal(task)
 	if err != nil {
-		log.Fatalf("Cannot Marshal Task %s\n", err)
+		return c.JSON(http.StatusInternalServerError, err)
 	}
 
 	if err := DB.Set([]byte(task.Id), []byte(mTask)); err != nil {
@@ -123,7 +121,7 @@ func UpdateTask(c echo.Context) error {
 func DeleteTask(c echo.Context) error {
 	taskID := c.Param("taskId")
 	if err := DB.Delete([]byte(taskID)); err != nil {
-		return c.JSON(http.StatusBadRequest, err)
+		return c.JSON(http.StatusInternalServerError, err)
 	}
 	return c.JSON(http.StatusOK, "task deleted")
 }

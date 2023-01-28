@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/charmbracelet/charm/kv"
@@ -63,7 +61,7 @@ func ListUsers(c echo.Context) error {
 				return nil
 			})
 			if err != nil {
-				panic(err)
+				return c.JSON(http.StatusInternalServerError, err)
 			}
 		}
 		return nil
@@ -89,16 +87,15 @@ func CreateUser(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := json.NewDecoder(c.Request().Body).Decode(&user)
 	if err != nil {
-		log.Fatalf("Failed reading the request body %s\n", err)
 		return c.JSON(http.StatusInternalServerError, err.Error)
 	}
 
 	u, err := json.Marshal(user)
 	if err != nil {
-		log.Fatalf("Cannot Marshal User %s\n", err)
+		return c.JSON(http.StatusBadRequest, err)
 	}
 	if err := DB.Set([]byte(user.Id), []byte(u)); err != nil {
-		log.Fatal(err)
+		return c.JSON(http.StatusInternalServerError, err)
 	}
 
 	return c.JSON(http.StatusOK, user)
@@ -115,7 +112,6 @@ func GetUser(c echo.Context) error {
 	tuser := User{}
 	_ = json.Unmarshal(v, &tuser)
 
-	fmt.Printf("Value form badger is %s\n", v)
 	return c.JSON(http.StatusOK, tuser)
 }
 
@@ -130,7 +126,7 @@ func UpdateUser(c echo.Context) error {
 	currentUser := User{}
 	err = json.Unmarshal(v, &currentUser)
 	if err != nil {
-		log.Fatalf("Cannot Marshal currentUser %s\n", err)
+		return c.JSON(http.StatusInternalServerError, err)
 	}
 
 	defer c.Request().Body.Close()
@@ -138,16 +134,15 @@ func UpdateUser(c echo.Context) error {
 	//Get the body from the request and replace the content of currentUser
 	err = json.NewDecoder(c.Request().Body).Decode(&currentUser)
 	if err != nil {
-		log.Fatalf("Failed reading the request body %s\n", err)
 		return c.JSON(http.StatusInternalServerError, err.Error)
 	}
 	mCurrentUser, err := json.Marshal(currentUser)
 	if err != nil {
-		log.Fatalf("Cannot Marshal User %s\n", err)
+		return c.JSON(http.StatusInternalServerError, err)
 	}
 
 	if err := DB.Set([]byte(currentUser.Id), []byte(mCurrentUser)); err != nil {
-		log.Fatal(err)
+		return c.JSON(http.StatusInternalServerError, err)
 	}
 
 	return c.JSON(http.StatusOK, currentUser)
@@ -157,8 +152,7 @@ func UpdateUser(c echo.Context) error {
 func DeleteUser(c echo.Context) error {
 	userID := c.Param("userId")
 	if err := DB.Delete([]byte(userID)); err != nil {
-		log.Fatalf("Error deleting a record: %s", err)
-		return c.JSON(http.StatusBadRequest, err)
+		return c.JSON(http.StatusInternalServerError, err)
 	}
 	return c.JSON(http.StatusOK, "user deleted")
 }
