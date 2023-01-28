@@ -1,8 +1,6 @@
 package main
 
 import (
-	"net/http"
-
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -30,18 +28,13 @@ func main() {
 	e.Use(middleware.Recover())
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
-	//TODO:
-	//remove this endpoint
-	e.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, "home endpoint")
-	})
-
 	e.POST("/login", handlers.Login)
 
 	v1 := e.Group("/api/v1")
 	v1.Use(echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.EnvVariables.SECRET_KEY),
 	}))
+
 	//User related routes
 	gUser := v1.Group("/users")
 	gUser.GET("", handlers.ListUsers)
