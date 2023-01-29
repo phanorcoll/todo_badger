@@ -47,6 +47,7 @@ func main() {
 	gTask := v1.Group("/tasks")
 	gTask.GET("", handlers.ListTasks)
 	gTask.POST("", handlers.CreateTask)
+	gTask.GET("/user/:userId", handlers.ListTaskPerUser)
 	gTask.GET("/:taskId", handlers.GetTask)
 	gTask.PUT("/:taskId", handlers.UpdateTask)
 	gTask.DELETE("/:taskId", handlers.DeleteTask)

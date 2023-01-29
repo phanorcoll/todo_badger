@@ -13,15 +13,44 @@ import (
 //Task holds the properties for task instances
 type Task struct {
 	Id          string `json:"id,omitempty"`
-  Title       string `json:"title,omitempty" validate:"required"`
+	Title       string `json:"title,omitempty" validate:"required"`
 	Description string `json:"description,omitempty" validate:"required"`
-	Completed   bool   `json:"completed,omitempty" validate:"required"`
+	Completed   bool   `json:"completed,omitempty"`
 	Priority    string `json:"priority,omitempty" validate:"required"`
 	UserID      string `json:"userId,omitempty" validate:"required"`
 	Type        string `json:"type"`
 }
 
 var TypeTask = "TASK"
+
+//ListTaskPerUser returns all the tasks for a particular user
+func ListTaskPerUser(c echo.Context) error {
+	userID := c.Param("userId")
+	listTasks := []Task{}
+	DB.View(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		opts.PrefetchSize = 10
+		it := txn.NewIterator(opts)
+		defer it.Close()
+		for it.Rewind(); it.Valid(); it.Next() {
+			item := it.Item()
+			err := item.Value(func(val []byte) error {
+				tTask := Task{}
+				_ = json.Unmarshal(val, &tTask)
+				if tTask.Type == TypeTask && tTask.UserID == userID {
+					listTasks = append(listTasks, tTask)
+				}
+				return nil
+			})
+			if err != nil {
+				return c.JSON(http.StatusBadRequest, err)
+			}
+		}
+		return nil
+	})
+
+	return c.JSON(http.StatusOK, listTasks)
+}
 
 //ListTasks returns the list of tasks
 func ListTasks(c echo.Context) error {
@@ -60,7 +89,7 @@ func CreateTask(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error)
 	}
-  //validate requird fields are present in task
+	//validate requird fields are present in task
 	if err := validate.Struct(task); err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -109,7 +138,7 @@ func UpdateTask(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error)
 	}
-  //validate requird fields are present in task
+	//validate requird fields are present in task
 	if err := validate.Struct(task); err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
